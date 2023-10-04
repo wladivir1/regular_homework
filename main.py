@@ -1,9 +1,11 @@
 import re
+from collections import defaultdict
 ## Читаем адресную книгу в формате CSV в список contacts_list:
 import csv
 
 
 def red_file (file):
+    """Читает и возвращает данные с файла"""
     with open(file) as f:
         rows = csv.reader(f, delimiter=",")
         contact_list = list(rows)
@@ -12,62 +14,63 @@ def red_file (file):
 ## 1. Выполните пункты 1-3 задания.
 ## Ваш код
 def format_number(contacts_list):
+    """Форматирует номер телефона и прводит к одному виду"""
     number_pattern_raw = r'(\+7|8)(\s*)(\(*)(\d{3})(\)*)(\s*)' \
                             r'(\-*)(\d{3})(\s*)(\-*)(\d{2})(\s*)(\-*)' \
                             r'(\d{2})(\s*)(\(*)(доб)*(\.*)(\s*)(\d+)*(\)*)'
+                            
     number_pattern_new = r'+7(\4)\8-\11-\14\15\17\18\19\20'
-    contacts_list_updated = list()
+    list_updated_number = list()
+    
     for card in contacts_list:
-        card_as_string = ','.join(card)
+        card_as_string = ','.join(card)      
         formatted_card = re.sub(number_pattern_raw, number_pattern_new, card_as_string)
-        card_as_list = formatted_card.split(',')
-        contacts_list_updated.append(card_as_list)
-    return contacts_list_updated
+        list_updated_number.append(formatted_card)
+        
+    return list_updated_number  
 
 def format_full_name(contacts_list):
+    """Форматирует фамилию имя отчество"""
     name_pattern_raw = r'^([А-ЯЁа-яё]+)(\s*)(\,?)([А-ЯЁа-яё]+)' \
                        r'(\s*)(\,?)([А-ЯЁа-яё]*)(\,?)(\,?)(\,?)'
+                       
     name_pattern_new = r'\1\3\10\4\6\9\7\8'
-    contacts_list_updated = list()
+    list_updated_name = list()
+    
     for card in contacts_list:
-        card_as_string = ','.join(card)
+        card_as_string = ''.join(card)
         formatted_card = re.sub(name_pattern_raw, name_pattern_new, card_as_string)
         card_as_list = formatted_card.split(',')
-        contacts_list_updated.append(card_as_list)
-    return contacts_list_updated
+        list_updated_name.append(card_as_list)
+        
+    return list_updated_name
 
 def join_duplicates(contacts_list):
+    """Убирает дубили и списка"""
+    data = defaultdict(list)
+    
     for i in contacts_list:
-        for j in contacts_list:
-            if i[0] == j[0] and i[1] == j[1] and i is not j:
-                if i[2] == '':
-                    i[2] = j[2]
-                if i[3] == '':
-                    i[3] = j[3]
-                if i[4] == '':
-                    i[4] = j[4]
-                if i[5] == '':
-                    i[5] = j[5]
-                if i[6] == '':
-                    i[6] = j[6]
-    contacts_list_updated = list()
-    for card in contacts_list:
-        if card not in contacts_list_updated:
-            contacts_list_updated.append(card)
-    return contacts_list_updated
+        key = tuple(i[:2])
+        for j in i:
+            if j not in data[key]:
+                data[key].append(j)
+    new_list = list(data.values())
+   
+    return new_list
 
-## 2. Сохраните получившиеся данные в другой файл.
-## Код для записи файла в формате CSV:
+# 2. Сохраните получившиеся данные в другой файл.
+# Код для записи файла в формате CSV:
 def write_file(contacts_list):
+    """Записывает данные в файл"""
     with open("phonebook.csv", "w") as f:
         datawriter = csv.writer(f, delimiter=',')
         datawriter.writerows(contacts_list)
         
 def main(file):
     contacts = red_file(file)
-    contacts = format_number(contacts)
-    contacts = format_full_name(contacts)
-    contacts = join_duplicates(contacts)
+    number = format_number(contacts)
+    name = format_full_name(number)
+    contacts = join_duplicates(name)
     contacts[0][2] = 'patronymic'
     write_file(contacts) 
 
