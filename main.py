@@ -45,10 +45,32 @@ def format_full_name(contacts_list):
         
     return list_updated_name
 
+def duplicates_combining(contacts_list):
+    new_list = list()
+    for column in contacts_list:
+        for contact in contacts_list:           
+            if column[0] == contact[0] and column[1] == contact[1]:
+                if column[2] == '':
+                    column[2] = contact[2]
+                if column[3] == '':
+                    column[3] = contact[3]
+                if column[4] == '':
+                    column[4] = contact[4]
+                if column[5] == '':
+                    column[5] = contact[5]
+                if column[6] == '':
+                    column[6] = contact[6]
+
+    for contact in contacts_list:
+        if contact not in new_list:
+            new_list.append(contact)
+            
+    return new_list
+
 def join_duplicates(contacts_list):
     """Убирает дубили и списка"""
     data = defaultdict(list)
-    
+               
     for i in contacts_list:
         key = tuple(i[:2])
         for j in i:
@@ -70,7 +92,8 @@ def main(file):
     contacts = red_file(file)
     number = format_number(contacts)
     name = format_full_name(number)
-    contacts = join_duplicates(name)
+    dublicat = duplicates_combining(name)
+    contacts = join_duplicates(dublicat)
     contacts[0][2] = 'patronymic'
     write_file(contacts) 
 
